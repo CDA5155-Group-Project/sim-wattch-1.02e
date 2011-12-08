@@ -564,6 +564,7 @@ bpred_lookup(struct bpred_t *pred,	/* branch predictor instance */
   struct bpred_btb_ent_t *pbtb = NULL;
   int index, i;
 
+
   if (!dir_update_ptr)
     panic("no bpred update record");
 
@@ -876,6 +877,55 @@ bpred_update(struct bpred_t *pred,	/* branch predictor instance */
 		}
 	    }
 	  dassert(lruhead && lruitem);
+
+	  if (!pbtb)
+	  {
+		    
+		  /*CODE FOR BRANCH TRACKING*/
+
+		  struct branchNode * branchItr = NULL;
+		  struct branchNode * branchItrPrev = NULL;
+
+		  if (pred->runs ==NULL)
+		  {
+			  fprintf(stderr, "ERROR: runs counter not instanced\n");
+		  }
+  
+		  if (pred->runs->branches == NULL)
+		  {
+			  pred->runs->branches = (struct branchNode *) calloc (1, sizeof( struct branchNode));
+			  pred->runs->branches->addr = baddr;
+			  pred->runs->branches->counter = 0;
+		  }
+
+		  branchItr = pred->runs->branches;
+		  while (1==1)
+		  {
+			  if (branchItr == NULL)
+			  {
+				  branchItr = (struct branchNode *) calloc (1, sizeof( struct branchNode));
+				  branchItr->addr = baddr;
+				  branchItr->counter = 1;
+				  if ( branchItrPrev != NULL)
+				  {
+					  branchItrPrev->next = branchItr;
+				  }
+				  break;
+			  }
+			  else if (branchItr->addr == baddr)
+			  {
+				  branchItr->counter++;
+				  break;
+			  }
+			  else 
+			  {
+				  branchItrPrev = branchItr;
+				  branchItr = branchItr->next;
+			  }
+		  }
+
+		  /*END BRANCH TRACKING CODE*/
+	  }
 	  
 	  if (!pbtb)
 	    /* missed in BTB; choose the LRU item in this set as the victim */

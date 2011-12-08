@@ -115,6 +115,19 @@ struct bpred_btb_ent_t {
   struct bpred_btb_ent_t *prev, *next; /* lru chaining pointers */
 };
 
+struct branchNode { 
+	md_addr_t addr;  
+	int pc;
+	int counter;
+	struct branchNode * next;
+};
+
+struct runNode {
+	int runCount;
+	struct branchNode * branches;
+	struct runNode * next;
+};
+
 /* direction predictor def */
 struct bpred_dir_t {
   enum bpred_class class;	/* type of predictor */
@@ -155,6 +168,8 @@ struct bpred_t {
     struct bpred_btb_ent_t *stack; /* return-address stack */
   } retstack;
 
+  struct runNode * runs;
+
   /* stats */
   counter_t addr_hits;		/* num correct addr-predictions */
   counter_t dir_hits;		/* num correct dir-predictions (incl addr) */
@@ -171,6 +186,8 @@ struct bpred_t {
   counter_t retstack_pops;	/* number of times a value was popped */
   counter_t retstack_pushes;	/* number of times a value was pushed */
   counter_t ras_hits;		/* num correct return-address predictions */
+
+
 };
 
 /* branch predictor update information */

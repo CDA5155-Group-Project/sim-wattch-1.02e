@@ -205,9 +205,14 @@ sim_print_stats(FILE *fd)		/* output stream */
 #endif
 
   /* print simulation stats */
+  fprintf(fd, "\n");
   fprintf(fd, "\nsim: ** simulation statistics **\n");
-  stat_print_stats(sim_sdb, fd);
-  sim_aux_stats(fd);
+    //fprintf(stderr, "PRINTING ALL STATUS CALLED from main\n");
+  //stat_print_stats(sim_sdb, fd);
+  //sim_aux_stats(fd);
+  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.lookups"), fd);
+  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.misses"), fd);
+
   fprintf(fd, "\n");
 }
 
@@ -245,7 +250,9 @@ main(int argc, char **argv, char **envp)
   /* set up a non-local exit point */
   if ((exit_code = setjmp(sim_exit_buf)) != 0)
     {
-      /* special handling as longjmp cannot pass 0 */
+	  fprintf(stderr, "Here running: %d\n", running);
+
+	 /* special handling as longjmp cannot pass 0 */
       exit_now(exit_code-1);
     }
 
@@ -416,6 +423,7 @@ main(int argc, char **argv, char **envp)
   running = TRUE;
   sim_main();
 
+  
   /* simulation finished early */
   exit_now(0);
 

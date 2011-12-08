@@ -4701,6 +4701,22 @@ sim_main(void)
 {
 
 	int counter = 0;
+	struct runNode * tempRun;
+	struct branchNode * tempBranch;
+
+	FILE * bfile;
+
+	bfile = fopen ("bfile.txt","w");
+
+	if (bfile == NULL)
+	{
+		panic("Couldn't open branch stat file");
+	}
+	else 
+	{
+		fprintf(bfile, "Starting new simulation\n");
+		fprintf(stderr, "Printing stats to file: bfile.txt\n");
+	}
 
 	/* ignore any floating point exceptions, they may occur on mis-speculated
 	execution paths */
@@ -4803,14 +4819,37 @@ default:
 	fetch_pred_PC = regs.regs_PC;
 	regs.regs_PC = regs.regs_PC - sizeof(md_inst_t);
 
+	pred->runs = (struct runNode *)calloc(1, sizeof(struct runNode));
+	pred->runs->runCount++;
+	
 	/* main simulator loop, NOTE: the pipe stages are traverse in reverse order
 	to eliminate this/next state synchronization and relaxation problems */
 	for (;;)
 	{
 		counter++;
 
-		if ((counter %10000==0)&&(counter !=0))
+		if ((counter %5000==0)&&(counter !=0))
 		{
+
+			fprintf(bfile,"Branch access stats for run: %d\n", counter);
+
+			tempBranch = pred->runs->branches;
+			while (tempBranch != NULL)
+			{
+				fprintf(bfile,"\tBranch addr: %d\n", tempBranch->addr);
+				fprintf(bfile,"\tNumber of times added to btb: %d\n", tempBranch->counter);
+				tempBranch = tempBranch->next;
+			}
+
+
+			tempRun = (struct runNode *)calloc(1, sizeof(struct runNode));
+
+			tempRun->next = pred->runs;
+
+			tempRun->runCount = pred->runs->runCount + 1;
+
+			pred->runs = tempRun;
+			
 			free(pred->btb.btb_data);
 			(pred->btb.btb_data = calloc(pred->btb.sets * pred->btb.assoc,
 				sizeof(struct bpred_btb_ent_t)));
@@ -4836,11 +4875,8 @@ default:
 			 pred->retstack.stack = calloc(pred->retstack.size, 
 				 sizeof(struct bpred_btb_ent_t));
 			  pred->retstack.tos = pred->retstack.size - 1;
-		      
-
-
-			fprintf(stderr, "*****reset BTB on cycle %d********\n", counter);
-	}
+		      //fprintf(stderr, "*****reset BTB on cycle %d********\n", counter);
+		}
 
 
 		/* RUU/LSQ sanity checks */
@@ -4920,6 +4956,11 @@ default:
 
 		/* finish early? */
 		if (max_insts && sim_num_insn >= max_insts)
+		{
+			fprintf(stderr, "I'M EXITNG EARLY!\n");
 			return;
+		}
 	}
+	//printf("*******************************WHERE AM I!?*******************************");
+
 }
