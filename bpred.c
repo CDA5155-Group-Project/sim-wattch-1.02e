@@ -898,6 +898,45 @@ bpred_update(struct bpred_t *pred,	/* branch predictor instance */
 			  pred->runs->branches->counter = 0;
 		  }
 
+		 if ( branches == NULL )
+		 {
+			branches = (struct branchNode *) calloc (1, sizeof( struct branchNode));
+			branches->addr = baddr;
+			if (!correct)
+				branches->missCounter++;
+		 }
+
+
+		  branchItr = branches;
+		  while (1==1)
+		  {
+			  if (branchItr == NULL)
+			  {
+				  branchItr = (struct branchNode *) calloc (1, sizeof( struct branchNode));
+				  branchItr->addr = baddr;
+				  branchItr->counter = 1;
+				  if (!correct)
+					branchItr->missCounter++;
+				  if ( branchItrPrev != NULL)
+				  {
+					  branchItrPrev->next = branchItr;
+				  }
+				  break;
+			  }
+			  else if (branchItr->addr == baddr)
+			  {
+				  branchItr->counter++;
+				  if (!correct)
+					branchItr->missCounter++;
+				  break;
+			  }
+			  else 
+			  {
+				  branchItrPrev = branchItr;
+				  branchItr = branchItr->next;
+			  }
+		  }
+
 		  branchItr = pred->runs->branches;
 		  while (1==1)
 		  {
@@ -923,6 +962,8 @@ bpred_update(struct bpred_t *pred,	/* branch predictor instance */
 				  branchItr = branchItr->next;
 			  }
 		  }
+
+		//  fprintf(stderr, "*****%d*****", branches->addr);
 
 		  /*END BRANCH TRACKING CODE*/
 	  }

@@ -117,8 +117,8 @@ struct bpred_btb_ent_t {
 
 struct branchNode { 
 	md_addr_t addr;  
-	int pc;
 	int counter;
+	int missCounter;
 	struct branchNode * next;
 };
 
@@ -127,6 +127,7 @@ struct runNode {
 	struct branchNode * branches;
 	struct runNode * next;
 };
+
 
 /* direction predictor def */
 struct bpred_dir_t {
@@ -297,5 +298,7 @@ void
 bpred_dump(struct bpred_t *pred,	/* branch predictor instance */
 	   FILE *stream);		/* output stream */
 #endif
+
+extern struct branchNode * branches;
 
 #endif /* BPRED_H */

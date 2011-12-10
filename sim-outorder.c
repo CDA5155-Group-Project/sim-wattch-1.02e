@@ -426,7 +426,7 @@ struct cache_t *itlb;
 struct cache_t *dtlb;
 
 /* branch predictor */
-static struct bpred_t *pred;
+ struct bpred_t *pred;
 
 /* functional unit resource pool */
 static struct res_pool *fu_pool = NULL;
@@ -3968,13 +3968,13 @@ ruu_dispatch(void)
 
 		/* set default fault - none */
 		fault = md_fault_none;
-
+		//fprintf(stderr, "%s:%d\n", __FUNCTION__, __LINE__);
 		/* more decoding and execution */
 		switch (op)
 		{
 #define DEFINST(OP,MSK,NAME,OPFORM,RES,CLASS,O1,O2,I1,I2,I3)		\
 	case OP:							\
-	/* compute output/input dependencies to out1-2 and in1-3 */	\
+		/* compute output/input dependencies to out1-2 and in1-3 */	\
 	out1 = O1; out2 = O2;						\
 	in1 = I1; in2 = I2; in3 = I3;					\
 	/* execute the instruction */					\
@@ -3982,6 +3982,7 @@ ruu_dispatch(void)
 	break;
 #define DEFLINK(OP,MSK,NAME,MASK,SHIFT)					\
 	case OP:							\
+
 	/* could speculatively decode a bogus inst, convert to NOP */	\
 	op = MD_NOP_OP;						\
 	/* compute output/input dependencies to out1-2 and in1-3 */	\
@@ -4703,8 +4704,13 @@ sim_main(void)
 	int counter = 0;
 	struct runNode * tempRun;
 	struct branchNode * tempBranch;
+	
+	char btbname[15];
 
 	FILE * bfile;
+	FILE * btbfile;
+
+	struct bpred_btb_ent_t * tempBtbNode;
 
 	bfile = fopen ("bfile.txt","w");
 
@@ -4822,6 +4828,7 @@ default:
 	pred->runs = (struct runNode *)calloc(1, sizeof(struct runNode));
 	pred->runs->runCount++;
 	
+
 	/* main simulator loop, NOTE: the pipe stages are traverse in reverse order
 	to eliminate this/next state synchronization and relaxation problems */
 	for (;;)
@@ -4841,6 +4848,31 @@ default:
 				tempBranch = tempBranch->next;
 			}
 
+			sprintf(btbname,"%d.txt",counter);
+
+			btbfile = fopen (btbname,"w");
+
+			if (btbfile == NULL)
+			{
+				panic("Couldn't open btbfile file");
+			}
+		
+			fprintf(stderr, "dumping btb to file\n");
+		
+			tempBtbNode = pred->btb.btb_data;
+			int j;
+
+      		for (j = 0; j < (pred->btb.sets * pred->btb.assoc) ; j++)
+			 {
+				//fprintf(stderr, "%d:%d:%d\n", pred->btb.btb_data[j].addr,pred->btb.btb_data[j].op,pred->btb.btb_data[j].target);
+				if (pred->btb.btb_data[j].addr !=0)
+				{
+					fprintf(btbfile, "%d:%d:%d\n", pred->btb.btb_data[j].addr,pred->btb.btb_data[j].op,pred->btb.btb_data[j].target);
+					//fprintf(stderr, "%d\n", pred->btb.btb_data[j].addr);
+				}
+			}
+
+			fclose(btbfile);
 
 			tempRun = (struct runNode *)calloc(1, sizeof(struct runNode));
 
@@ -4898,10 +4930,8 @@ default:
 
 		/* commit entries from RUU/LSQ to architected register file */
 		ruu_commit();
-
 		/* service function unit release events */
 		ruu_release_fu();
-
 		/* ==> may have ready queue entries carried over from previous cycles */
 
 		/* service result completions, also readies dependent operations */
@@ -4910,6 +4940,7 @@ default:
 
 		if (!bugcompat_mode)
 		{
+
 			/* try to locate memory operations that are ready to execute */
 			/* ==> inserts operations into ready queue --> mem deps resolved */
 			lsq_refresh();
@@ -4917,12 +4948,12 @@ default:
 			/* issue operations ready to execute from a previous cycle */
 			/* <== drains ready queue <-- ready operations commence execution */
 			ruu_issue();
+
 		}
 
 		/* decode and dispatch new operations */
 		/* ==> insert ops w/ no deps or all regs ready --> reg deps resolved */
 		ruu_dispatch();
-
 		if (bugcompat_mode)
 		{
 			/* try to locate memory operations that are ready to execute */

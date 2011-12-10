@@ -75,6 +75,20 @@
 #include "loader.h"
 #include "sim.h"
 
+
+struct branchNode { 
+	md_addr_t addr;  
+	int counter;
+	int missCounter;
+	struct branchNode * next;
+};
+
+struct runNode {
+	int runCount;
+	struct branchNode * branches;
+	struct runNode * next;
+};
+
 /* stats signal handler */
 static void
 signal_sim_stats(int sigtype)
@@ -101,6 +115,10 @@ unsigned int sim_mem_usage = 0;
 time_t sim_start_time;
 time_t sim_end_time;
 int sim_elapsed_time;
+
+//Added from sim-outorder.c
+struct branchNode * branches;
+
 
 /* byte/word swapping required to execute target executable on this host */
 int sim_swap_bytes;
@@ -188,6 +206,21 @@ static int running = FALSE;
 void
 sim_print_stats(FILE *fd)		/* output stream */
 {
+	struct branchNode * tempBranch;
+	FILE * bfile2;
+
+	bfile2 = fopen ("bfile2.txt","w");
+
+	if (bfile2 == NULL)
+	{
+		panic("Couldn't open branch stat file");
+	}
+	else 
+	{
+		fprintf(bfile2, "Starting new simulation\n");
+		fprintf(stderr, "Printing stats to file: bfile2.txt\n");
+	}
+
 #if 0 /* not portable... :-( */
   extern char etext, *sbrk(int);
 #endif
@@ -209,6 +242,13 @@ sim_print_stats(FILE *fd)		/* output stream */
   fprintf(fd, "\nsim: ** simulation statistics **\n");
     //fprintf(stderr, "PRINTING ALL STATUS CALLED from main\n");
   //stat_print_stats(sim_sdb, fd);
+  tempBranch = branches;
+  while (tempBranch)
+  {
+	  fprintf(bfile2,"%d:%d:%d\n", tempBranch->addr, tempBranch->counter, tempBranch->missCounter);
+	tempBranch = tempBranch->next;
+  }
+
   //sim_aux_stats(fd);
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.lookups"), fd);
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.misses"), fd);
