@@ -4842,20 +4842,20 @@ default:
 
 			tempBranch = pred->runs->branches;
 			
-			sprintf(btbname,"stats/%d.stats.txt",counter);
+			sprintf(btbname,"stats/%d.stats_%d.csv",counter,cleared);
 
 			//opens file for stats of branches added during this run
 			bfile = fopen (btbname,"w");
 
 			while (tempBranch != NULL)
 			{
-				fprintf(bfile,"%d:%d\r\n", tempBranch->addr,tempBranch->counter);
+				fprintf(bfile,"%d,%d\r\n", tempBranch->addr,tempBranch->counter);
 				//fprintf(bfile,"\tNumber of times added to btb: %d\n", tempBranch->counter);
 				tempBranch = tempBranch->next;
 			}
 			fclose(bfile);
 
-			sprintf(btbname,"%btbs/d.btb.txt",counter);
+			sprintf(btbname,"btbs/%d.btb_%d.csv",counter,cleared);
 
 			//outputs the btb as it looks at the end of this run
 
@@ -4876,49 +4876,49 @@ default:
 				//fprintf(stderr, "%d:%d:%d\n", pred->btb.btb_data[j].addr,pred->btb.btb_data[j].op,pred->btb.btb_data[j].target);
 				if (pred->btb.btb_data[j].addr !=0)
 				{
-					fprintf(btbfile, "%d:", pred->btb.btb_data[j].addr);//pred->btb.btb_data[j].op,pred->btb.btb_data[j].target);
+					fprintf(btbfile, "%d,", pred->btb.btb_data[j].addr);//pred->btb.btb_data[j].op,pred->btb.btb_data[j].target);
 					//fprintf(stderr, "%d\n", pred->btb.btb_data[j].addr);
 					switch(pred->btb.btb_data[j].op)
 					{
 					case JUMP:
-						fprintf(btbfile, "JUMP:");
+						fprintf(btbfile, "JUMP,");
 						break;
 					case JAL:
-						fprintf(btbfile, "JAL:");
+						fprintf(btbfile, "JAL,");
 						break;
 					case JR:
-						fprintf(btbfile, "JR:");
+						fprintf(btbfile, "JR,");
 						break;
 					case JALR:
-						fprintf(btbfile, "JALR:");
+						fprintf(btbfile, "JALR,");
 						break;
 					case BEQ:
-						fprintf(btbfile, "BEQ:");
+						fprintf(btbfile, "BEQ,");
 						break;
 					case BNE:
-						fprintf(btbfile, "BNE:");
+						fprintf(btbfile, "BNE,");
 						break;
 					case BLEZ:
-						fprintf(btbfile, "BLEZ:");
+						fprintf(btbfile, "BLEZ,");
 						break;
 					case BGTZ:
-						fprintf(btbfile, "BGTZ:");
+						fprintf(btbfile, "BGTZ,");
 						break;
 					case BLTZ:
-						fprintf(btbfile, "BLTZ:");
+						fprintf(btbfile, "BLTZ,");
 						break;
 					case BGEZ:
-						fprintf(btbfile, "BGEZ:");
+						fprintf(btbfile, "BGEZ,");
 						break;
 					case BC1F:
-						fprintf(btbfile, "BC1F:");
+						fprintf(btbfile, "BC1F,");
 						break;
 					case BC1T:
-						fprintf(btbfile, "BC1T:");
+						fprintf(btbfile, "BC1T,");
 						break;
 						
 					default:
-						fprintf(btbfile, "UNKNOWN:");
+						fprintf(btbfile, "UNKNOWN,");
 						break;
 
 					};
@@ -4936,8 +4936,11 @@ default:
 			tempRun->runCount = pred->runs->runCount + 1;
 
 			pred->runs = tempRun;
+
+			cleared = 0;
 			if (1==2)
 			{
+				cleared = 1;
 				free(pred->btb.btb_data);
 				(pred->btb.btb_data = calloc(pred->btb.sets * pred->btb.assoc,
 					sizeof(struct bpred_btb_ent_t)));

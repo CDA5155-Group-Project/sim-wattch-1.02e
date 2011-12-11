@@ -92,6 +92,9 @@ struct runNode {
 	struct runNode * next;
 };
 
+int cleared;
+char bfileName[20];
+
 /* stats signal handler */
 static void
 signal_sim_stats(int sigtype)
@@ -212,7 +215,9 @@ sim_print_stats(FILE *fd)		/* output stream */
 	struct branchNode * tempBranch;
 	FILE * bfile2;
 
-	bfile2 = fopen ("bfile2.txt","w");
+	sprintf(bfileName, "bfile2_%d.csv", cleared);
+
+	bfile2 = fopen (bfileName,"w");
 
 	if (bfile2 == NULL)
 	{
@@ -220,8 +225,8 @@ sim_print_stats(FILE *fd)		/* output stream */
 	}
 	else 
 	{
-		fprintf(bfile2, "Starting new simulation\n");
-		fprintf(stderr, "Printing stats to file: bfile2.txt\n");
+		//fprintf(bfile2, "Starting new simulation\n");
+		fprintf(stderr, "Printing stats to file: bfile2.csv\n");
 	}
 
 #if 0 /* not portable... :-( */
@@ -248,7 +253,7 @@ sim_print_stats(FILE *fd)		/* output stream */
   tempBranch = branches;
   while (tempBranch)
   {
-	  fprintf(bfile2,"%d:%d:%d:", tempBranch->addr,tempBranch->counter, tempBranch->missCounter);
+	  fprintf(bfile2,"%d,%d,%d,", tempBranch->addr,tempBranch->counter, tempBranch->missCounter);
 	switch(tempBranch->op)
 	{
 	case JUMP:
@@ -307,7 +312,7 @@ sim_print_stats(FILE *fd)		/* output stream */
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.updates"), fd);
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.lookups"), fd);
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.misses"), fd);
-
+  /*
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "sim_num_insn"), bfile2);
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "sim_cycle"), bfile2);
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "sim_total_branches"), bfile2);
@@ -317,7 +322,7 @@ sim_print_stats(FILE *fd)		/* output stream */
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.updates"), bfile2);
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.lookups"), bfile2);
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.misses"), bfile2);
-
+  */
   fprintf(fd, "\n");
 }
 
