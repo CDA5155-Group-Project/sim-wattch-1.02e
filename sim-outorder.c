@@ -4712,7 +4712,7 @@ sim_main(void)
 
 	struct bpred_btb_ent_t * tempBtbNode;
 
-	bfile = fopen ("bfile.txt","w");
+	/*bfile = fopen ("bfile.txt","w");
 
 	if (bfile == NULL)
 	{
@@ -4723,7 +4723,7 @@ sim_main(void)
 		fprintf(bfile, "Starting new simulation\n");
 		fprintf(stderr, "Printing stats to file: bfile.txt\n");
 	}
-
+	*/
 	/* ignore any floating point exceptions, they may occur on mis-speculated
 	execution paths */
 	signal(SIGFPE, SIG_IGN);
@@ -4838,17 +4838,26 @@ default:
 		if ((counter %5000==0)&&(counter !=0))
 		{
 
-			fprintf(bfile,"Branch access stats for run: %d\n", counter);
+			//fprintf(bfile,"Branch access stats for run: %d\n", counter);
 
 			tempBranch = pred->runs->branches;
+			
+			sprintf(btbname,"%d.stats.txt",counter);
+
+			//opens file for stats of branches added during this run
+			bfile = fopen (btbname,"w");
+
 			while (tempBranch != NULL)
 			{
-				fprintf(bfile,"\tBranch addr: %d\n", tempBranch->addr);
-				fprintf(bfile,"\tNumber of times added to btb: %d\n", tempBranch->counter);
+				fprintf(bfile,"%d:%d\r\n", tempBranch->addr,tempBranch->counter);
+				//fprintf(bfile,"\tNumber of times added to btb: %d\n", tempBranch->counter);
 				tempBranch = tempBranch->next;
 			}
+			fclose(bfile);
 
-			sprintf(btbname,"%d.txt",counter);
+			sprintf(btbname,"%d.btb.txt",counter);
+
+			//outputs the btb as it looks at the end of this run
 
 			btbfile = fopen (btbname,"w");
 
@@ -4857,7 +4866,7 @@ default:
 				panic("Couldn't open btbfile file");
 			}
 		
-			fprintf(stderr, "dumping btb to file\n");
+			//fprintf(stderr, "dumping btb to file\n");
 		
 			tempBtbNode = pred->btb.btb_data;
 			int j;
@@ -4867,8 +4876,54 @@ default:
 				//fprintf(stderr, "%d:%d:%d\n", pred->btb.btb_data[j].addr,pred->btb.btb_data[j].op,pred->btb.btb_data[j].target);
 				if (pred->btb.btb_data[j].addr !=0)
 				{
-					fprintf(btbfile, "%d:%d:%d\n", pred->btb.btb_data[j].addr,pred->btb.btb_data[j].op,pred->btb.btb_data[j].target);
+					fprintf(btbfile, "%d:", pred->btb.btb_data[j].addr);//pred->btb.btb_data[j].op,pred->btb.btb_data[j].target);
 					//fprintf(stderr, "%d\n", pred->btb.btb_data[j].addr);
+					switch(pred->btb.btb_data[j].op)
+					{
+					case JUMP:
+						fprintf(btbfile, "JUMP:");
+						break;
+					case JAL:
+						fprintf(btbfile, "JAL:");
+						break;
+					case JR:
+						fprintf(btbfile, "JR:");
+						break;
+					case JALR:
+						fprintf(btbfile, "JALR:");
+						break;
+					case BEQ:
+						fprintf(btbfile, "BEQ:");
+						break;
+					case BNE:
+						fprintf(btbfile, "BNE:");
+						break;
+					case BLEZ:
+						fprintf(btbfile, "BLEZ:");
+						break;
+					case BGTZ:
+						fprintf(btbfile, "BGTZ:");
+						break;
+					case BLTZ:
+						fprintf(btbfile, "BLTZ:");
+						break;
+					case BGEZ:
+						fprintf(btbfile, "BGEZ:");
+						break;
+					case BC1F:
+						fprintf(btbfile, "BC1F:");
+						break;
+					case BC1T:
+						fprintf(btbfile, "BC1T:");
+						break;
+						
+					default:
+						fprintf(btbfile, "UNKNOWN:");
+						break;
+
+					};
+					fprintf(btbfile, "%d\n", pred->btb.btb_data[j].target);
+
 				}
 			}
 
@@ -4881,33 +4936,36 @@ default:
 			tempRun->runCount = pred->runs->runCount + 1;
 
 			pred->runs = tempRun;
-			
-			free(pred->btb.btb_data);
-			(pred->btb.btb_data = calloc(pred->btb.sets * pred->btb.assoc,
-				sizeof(struct bpred_btb_ent_t)));
-			
-			int i;
-			if (pred->btb.assoc > 1)
+			if (1==2)
 			{
-				for (i=0; i < (pred->btb.assoc*pred->btb.sets); i++)
-				  {
-					if (i % pred->btb.assoc != pred->btb.assoc - 1)
-					  pred->btb.btb_data[i].next = &pred->btb.btb_data[i+1];
-					else
-					  pred->btb.btb_data[i].next = NULL;
+				free(pred->btb.btb_data);
+				(pred->btb.btb_data = calloc(pred->btb.sets * pred->btb.assoc,
+					sizeof(struct bpred_btb_ent_t)));
+			
+				int i;
+				if (pred->btb.assoc > 1)
+				{
+					for (i=0; i < (pred->btb.assoc*pred->btb.sets); i++)
+						{
+						if (i % pred->btb.assoc != pred->btb.assoc - 1)
+							pred->btb.btb_data[i].next = &pred->btb.btb_data[i+1];
+						else
+							pred->btb.btb_data[i].next = NULL;
 				    
-					if (i % pred->btb.assoc != pred->btb.assoc - 1)
-					  pred->btb.btb_data[i+1].prev = &pred->btb.btb_data[i];
-				  }
-			}
+						if (i % pred->btb.assoc != pred->btb.assoc - 1)
+							pred->btb.btb_data[i+1].prev = &pred->btb.btb_data[i];
+						}
+				}
 
 	
 		
-			  free(pred->retstack.stack);
-			 pred->retstack.stack = calloc(pred->retstack.size, 
-				 sizeof(struct bpred_btb_ent_t));
-			  pred->retstack.tos = pred->retstack.size - 1;
-		      //fprintf(stderr, "*****reset BTB on cycle %d********\n", counter);
+					free(pred->retstack.stack);
+					pred->retstack.stack = calloc(pred->retstack.size, 
+						sizeof(struct bpred_btb_ent_t));
+					pred->retstack.tos = pred->retstack.size - 1;
+					//fprintf(stderr, "*****reset BTB on cycle %d********\n", counter);
+
+			}
 		}
 
 

@@ -563,7 +563,7 @@ bpred_lookup(struct bpred_t *pred,	/* branch predictor instance */
 {
   struct bpred_btb_ent_t *pbtb = NULL;
   int index, i;
-
+  struct branchNode * branchItr;
 
   if (!dir_update_ptr)
     panic("no bpred update record");
@@ -631,6 +631,28 @@ bpred_lookup(struct bpred_t *pred,	/* branch predictor instance */
     default:
       panic("bogus predictor class");
   }
+
+  /*CDA5155*/
+
+  branchItr = branches;
+    while (1==1)
+	{
+		if (branchItr == NULL)
+		{
+			break;
+		}
+		else if (branchItr->addr == baddr)
+		{
+			branchItr->counter++;
+			break;
+		}
+		else 
+		{
+			branchItr = branchItr->next;
+		}
+	}
+
+  /*END CDA5155*/
 
   /*
    * We have a stateful predictor, and have gotten a pointer into the
@@ -902,6 +924,8 @@ bpred_update(struct bpred_t *pred,	/* branch predictor instance */
 		 {
 			branches = (struct branchNode *) calloc (1, sizeof( struct branchNode));
 			branches->addr = baddr;
+			branches->op= op;
+			branches->called=0;
 			if (!correct)
 				branches->missCounter++;
 		 }
@@ -914,9 +938,13 @@ bpred_update(struct bpred_t *pred,	/* branch predictor instance */
 			  {
 				  branchItr = (struct branchNode *) calloc (1, sizeof( struct branchNode));
 				  branchItr->addr = baddr;
+				  branchItr->op=op;
 				  branchItr->counter = 1;
+				  branchItr->called=1;
 				  if (!correct)
-					branchItr->missCounter++;
+				  {
+					branchItr->missCounter=1;
+				  }
 				  if ( branchItrPrev != NULL)
 				  {
 					  branchItrPrev->next = branchItr;
@@ -926,8 +954,12 @@ bpred_update(struct bpred_t *pred,	/* branch predictor instance */
 			  else if (branchItr->addr == baddr)
 			  {
 				  branchItr->counter++;
+				  branchItr->op=op;
+				  branchItr->called++;
 				  if (!correct)
+				  {
 					branchItr->missCounter++;
+				  }
 				  break;
 			  }
 			  else 

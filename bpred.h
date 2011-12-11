@@ -118,7 +118,9 @@ struct bpred_btb_ent_t {
 struct branchNode { 
 	md_addr_t addr;  
 	int counter;
+	int called;
 	int missCounter;
+	int op;
 	struct branchNode * next;
 };
 
