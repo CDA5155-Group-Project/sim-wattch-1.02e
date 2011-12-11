@@ -130,7 +130,6 @@ struct runNode {
 	struct runNode * next;
 };
 
-
 /* direction predictor def */
 struct bpred_dir_t {
   enum bpred_class class;	/* type of predictor */

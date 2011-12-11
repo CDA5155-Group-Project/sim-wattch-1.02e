@@ -138,4 +138,10 @@ void sim_uninit(void);
 void
 sim_print_stats(FILE *fd);		/* output stream */
 
+/*CDA5155*/
+
+extern int cleared;
+
+/*END CDA5155*/
+
 #endif /* SIM_H */
