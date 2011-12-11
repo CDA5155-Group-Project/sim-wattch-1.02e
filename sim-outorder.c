@@ -4842,7 +4842,7 @@ default:
 
 			tempBranch = pred->runs->branches;
 			
-			sprintf(btbname,"%d.stats.txt",counter);
+			sprintf(btbname,"stats/%d.stats.txt",counter);
 
 			//opens file for stats of branches added during this run
 			bfile = fopen (btbname,"w");
@@ -4855,7 +4855,7 @@ default:
 			}
 			fclose(bfile);
 
-			sprintf(btbname,"%d.btb.txt",counter);
+			sprintf(btbname,"%btbs/d.btb.txt",counter);
 
 			//outputs the btb as it looks at the end of this run
 
