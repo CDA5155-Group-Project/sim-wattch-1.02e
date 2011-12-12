@@ -94,6 +94,7 @@ struct runNode {
 
 int cleared;
 char bfileName[20];
+char statFileName[20];
 
 /* stats signal handler */
 static void
@@ -214,11 +215,12 @@ sim_print_stats(FILE *fd)		/* output stream */
 {
 	struct branchNode * tempBranch;
 	FILE * bfile2;
+	FILE * statFile;
 
 	sprintf(bfileName, "bfile2_%d.csv", cleared);
-
+	sprintf(statFileName, "statfile_%d.txt", cleared);
 	bfile2 = fopen (bfileName,"w");
-
+	statFile = fopen (statFileName, "w");
 	if (bfile2 == NULL)
 	{
 		panic("Couldn't open branch stat file");
@@ -312,17 +314,26 @@ sim_print_stats(FILE *fd)		/* output stream */
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.updates"), fd);
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.lookups"), fd);
   stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.misses"), fd);
-  /*
-  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "sim_num_insn"), bfile2);
-  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "sim_cycle"), bfile2);
-  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "sim_total_branches"), bfile2);
-  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "avg_bpred_power"), bfile2);
-  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "total_power"), bfile2);
-  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_power"), bfile2);
-  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.updates"), bfile2);
-  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.lookups"), bfile2);
-  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.misses"), bfile2);
-  */
+  
+  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "sim_num_insn"), statFile);
+  fprintf(statFile, "\r\n");
+  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "sim_cycle"), statFile);
+  fprintf(statFile, "\r\n");
+  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "sim_total_branches"), statFile);
+  fprintf(statFile, "\r\n");
+  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "avg_bpred_power"), statFile);
+  fprintf(statFile, "\r\n");
+  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "total_power"), statFile);
+  fprintf(statFile, "\r\n");
+  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_power"), statFile);
+  fprintf(statFile, "\r\n");
+  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.updates"), statFile);
+  fprintf(statFile, "\r\n");
+  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.lookups"), statFile);
+  fprintf(statFile, "\r\n");
+  stat_print_stat(sim_sdb, stat_find_stat(sim_sdb, "bpred_bimod.misses"), statFile);
+  fprintf(statFile, "\r\n");
+  
   fprintf(fd, "\n");
 }
 
