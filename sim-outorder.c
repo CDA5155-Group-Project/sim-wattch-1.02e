@@ -4938,7 +4938,7 @@ default:
 			pred->runs = tempRun;
 
 			cleared = 0;
-			if (1==2)
+			if (1==1)
 			{
 				cleared = 1;
 				free(pred->btb.btb_data);
